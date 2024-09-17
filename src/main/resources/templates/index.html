@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Search API Demo</title>
+</head>
+<body>
+<h1>Vyhledávání Google</h1>
+<form id="searchForm">
+    <input type="text" id="searchQuery" placeholder="Zadejte text" required>
+    <button type="submit">Vyhledat</button>
+</form>
+<div id="results"></div>
+<button id="downloadButton" style="display:none;">Uložit výsledek</button>
+
+<script>
+    const form = document.getElementById('searchForm');
+    const resultsDiv = document.getElementById('results');
+    const downloadButton = document.getElementById('downloadButton');
+    let searchResults = [];
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const query = document.getElementById('searchQuery').value;
+
+        // Google Custom Search API request
+        // const apiKey = 'AIzaSyDYSDCDFNmAfAhSn4rzj0K4gUeFnhJ7aEY';  // Zde vložte váš Google API klíč  AIzaSyDYSDCDFNmAfAhSn4rzj0K4gUeFnhJ7aEY
+        // const cx = 'a1341dd99cf7f420c';       // Zde vložte váš Custom Search Engine ID
+        const url = "https://www.googleapis.com/customsearch/v1?q=" + encodeURIComponent(query) + "&key=[[${apiKey}]]&cx=[[${cx}]]";
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            searchResults = data.items.map(item => ({
+                title: item.title,
+                link: item.link,
+                snippet: item.snippet
+            }));
+
+            // Zobrazení výsledků
+            resultsDiv.innerHTML = searchResults.map(result => `
+                    <div>
+                        <h3>${result.title}</h3>
+                        <p>${result.snippet}</p>
+                        <a href="${result.link}" target="_blank">${result.link}</a>
+                    </div>
+                `).join('');
+
+            // Zobrazení tlačítka pro stažení
+            downloadButton.style.display = 'block';
+
+        } catch (error) {
+            resultsDiv.innerHTML = 'Chyba při získávání výsledků';
+            console.error(error);
+        }
+    });
+
+    // Stahování výsledků jako JSON
+    downloadButton.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(searchResults, null, 2)], {type: 'application/json'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'search_results.json';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    });
+</script>
+</body>
+</html>
