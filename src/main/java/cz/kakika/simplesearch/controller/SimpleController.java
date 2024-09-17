@@ -21,7 +21,6 @@ public class SimpleController {
         return modelAndView;
     }
 
-
     @GetMapping("/hello")
     @ResponseBody
     public HelloResponse hello() {
